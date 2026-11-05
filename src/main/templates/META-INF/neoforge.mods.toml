@@ -1,0 +1,36 @@
+modLoader="javafml" #mandatory
+loaderVersion="${loader_version_range}" #mandatory
+license="${mod_license}"
+
+[[mods]] #mandatory
+modId="${mod_id}" #mandatory
+version="${mod_version}" #mandatory
+displayName="${mod_name}" #mandatory
+authors="ChinaEX123"
+description='''
+The whole world is full of radiation—how should you survive?
+<p>Create a world with the "Ashlands" world type to enable the mechanic: the world is irradiated,
+only the 3x3 chunks around spawn are safe, a visible curtain of light marks the border, boundary trees
+are reduced to leafless trunks and monsters are strengthened. Crossing the curtain grants an
+unlimited, uncurable radiation effect that escalates every 10 minutes.</p>
+<p>选择「灰域」世界类型后启用本模组的全部机制：全世界充满辐射，仅出生点周围 3x3 区块安全，
+边界处有贯穿世界高度的光幕，边界树木只留树干，怪物被强化。跨过光幕会获得永久且无法清除的
+辐射效果，每 10 分钟升一级。</p>
+'''
+
+[[mixins]]
+config="${mod_id}.mixins.json"
+
+[[dependencies.${mod_id}]] #optional
+    modId="neoforge" #mandatory
+    type="required" #mandatory
+    versionRange="[${neo_version},)" #mandatory
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

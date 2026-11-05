@@ -1,0 +1,6 @@
+{
+  "generator.ashlands.ashlands": "Ashlands",
+  "effect.ashlands.radiation": "Radiation",
+  "death.attack.ashlands.radiation": "%1$s was consumed by radiation",
+  "death.attack.ashlands.radiation.player": "%1$s was consumed by radiation while fighting %2$s"
+}
