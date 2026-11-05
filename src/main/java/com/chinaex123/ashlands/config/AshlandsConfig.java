@@ -19,7 +19,7 @@ public final class AshlandsConfig {
                 .comment("Safe zone radius in chunks. 1 means a 3x3 area (9 chunks) centered on the spawn chunk; 0 means only the spawn chunk; 2 means 5x5, and so on (max 16 = 33x33).")
                 .comment("光幕位置、辐射判定边界、树叶保留范围都以此为准, 修改后需要重启游戏/服务器。")
                 .comment("The curtain position, the radiation boundary and the leaf-preserved area all follow this value. Changing it requires a game/server restart.")
-                .defineInRange("safeRadiusChunks", 2, 0, 16);
+                .defineInRange("safeRadiusChunks", 1, 0, 16);
         MINUTES_PER_RADIATION_LEVEL = builder
                 .comment("辐射每提升一级所需的时间（分钟）。辐射最高 3 级。")
                 .comment("Minutes required for radiation to gain one level. Radiation caps at level 3.")
