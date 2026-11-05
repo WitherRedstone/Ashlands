@@ -11,5 +11,8 @@ public class AshlandsClient {
 
     public AshlandsClient(ModContainer container) {
         NeoForge.EVENT_BUS.addListener(RadiationCurtainRenderer::onRenderLevelStage);
+        NeoForge.EVENT_BUS.addListener(RadiationAtmosphere::onComputeFogColor);
+        NeoForge.EVENT_BUS.addListener(RadiationAtmosphere::onRenderFog);
+        NeoForge.EVENT_BUS.addListener(RadiationAtmosphere::onRenderLevelStage);
     }
 }

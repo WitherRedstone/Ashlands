@@ -3,6 +3,9 @@
   "package": "com.chinaex123.ashlands.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
+  "client": [
+    "client.LevelRendererMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

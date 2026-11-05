@@ -4,6 +4,7 @@ import com.chinaex123.ashlands.config.AshlandsConfig;
 import com.chinaex123.ashlands.worldgen.AshlandsChunkGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
@@ -12,6 +13,9 @@ import java.util.List;
 import java.util.Set;
 
 public final class AshlandsWorld {
+
+    /** 计算雾气起点时，最多向外找这么多圈区块；再远就当作「安全区极大」。 */
+    private static final int MAX_FOG_SEARCH_RING = 24;
 
     private static volatile boolean clientActive = false;
     private static volatile Set<Long> clientSafeChunks = Set.of();
@@ -59,5 +63,77 @@ public final class AshlandsWorld {
 
     public static Set<Long> clientSafeChunks() {
         return clientSafeChunks;
+    }
+
+    public static int clientDistanceToSafeZone(int blockX, int blockZ) {
+        Set<Long> safe = clientSafeChunks;
+        if (safe.isEmpty()) {
+            return Integer.MAX_VALUE;
+        }
+
+        int best = Integer.MAX_VALUE;
+        for (long key : safe) {
+            int chunkX = ChunkPos.getX(key);
+            int chunkZ = ChunkPos.getZ(key);
+
+            int minX = chunkX << 4;
+            int minZ = chunkZ << 4;
+            int dx = axisDistance(blockX, minX);
+            int dz = axisDistance(blockZ, minZ);
+            int distance = Math.max(dx, dz);
+            if (distance < best) {
+                best = distance;
+                if (best == 0) {
+                    return 0;
+                }
+            }
+        }
+        return best;
+    }
+
+    public static double clientDistanceToSafeZone(double blockX, double blockZ) {
+        Set<Long> safe = clientSafeChunks;
+        if (safe.isEmpty()) {
+            return 0.0D;
+        }
+
+        double best = Double.MAX_VALUE;
+        for (long key : safe) {
+            int minX = ChunkPos.getX(key) << 4;
+            int minZ = ChunkPos.getZ(key) << 4;
+
+            double dx = axisDistance(blockX, minX);
+            double dz = axisDistance(blockZ, minZ);
+            double distance = Math.max(dx, dz);
+            if (distance < best) {
+                best = distance;
+                if (best <= 0.0D) {
+                    return 0.0D;
+                }
+            }
+        }
+        return best;
+    }
+
+    private static double axisDistance(double value, int chunkMin) {
+        double chunkMax = chunkMin + 16.0D;
+        if (value < chunkMin) {
+            return chunkMin - value;
+        }
+        if (value > chunkMax) {
+            return value - chunkMax;
+        }
+        return 0.0D;
+    }
+
+    private static int axisDistance(int value, int chunkMin) {
+        int chunkMax = chunkMin + 15;
+        if (value < chunkMin) {
+            return chunkMin - value;
+        }
+        if (value > chunkMax) {
+            return value - chunkMax;
+        }
+        return 0;
     }
 }
