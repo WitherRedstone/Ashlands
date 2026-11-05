@@ -1,6 +1,12 @@
 {
-  "generator.ashlands.ashlands": "灰域",
+  "itemGroup.ashlands": "灰域",
+
+  "block.ashlands.purifier": "净化器",
+  "block.ashlands.purifier.purified": "区块 (%1$s, %2$s) 已被净化",
+  "block.ashlands.purifier.already_safe": "这个区块已经是安全区了",
   "effect.ashlands.radiation": "辐射",
+  "generator.ashlands.ashlands": "灰域",
+
   "death.attack.ashlands.radiation": "%1$s 被辐射吞噬了",
   "death.attack.ashlands.radiation.player": "%1$s 在与 %2$s 战斗时被辐射吞噬了"
 }

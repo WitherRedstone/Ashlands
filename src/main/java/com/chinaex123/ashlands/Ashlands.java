@@ -1,10 +1,8 @@
 package com.chinaex123.ashlands;
 
 import com.chinaex123.ashlands.config.AshlandsConfig;
+import com.chinaex123.ashlands.init.*;
 import com.chinaex123.ashlands.network.AshlandsNetwork;
-import com.chinaex123.ashlands.init.ModAttachments;
-import com.chinaex123.ashlands.init.ModChunkGenerators;
-import com.chinaex123.ashlands.init.ModMobEffects;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
@@ -22,6 +20,9 @@ public class Ashlands {
         ModChunkGenerators.register(modEventBus);
         ModMobEffects.register(modEventBus);
         ModAttachments.register(modEventBus);
+        ModBlocks.register(modEventBus);
+        ModItems.register(modEventBus);
+        ModCreativeTabs.register(modEventBus);
 
         modEventBus.addListener(AshlandsNetwork::register);
         modContainer.registerConfig(ModConfig.Type.COMMON, AshlandsConfig.SPEC);

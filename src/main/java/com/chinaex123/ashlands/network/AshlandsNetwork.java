@@ -16,7 +16,8 @@ public final class AshlandsNetwork {
                         payload.active(),
                         payload.centerChunkX(),
                         payload.centerChunkZ(),
-                        payload.radius()))
+                        payload.radius(),
+                        payload.purified()))
         );
     }
 }

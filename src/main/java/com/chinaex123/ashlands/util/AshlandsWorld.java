@@ -4,14 +4,17 @@ import com.chinaex123.ashlands.config.AshlandsConfig;
 import com.chinaex123.ashlands.worldgen.AshlandsChunkGenerator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class AshlandsWorld {
 
     private static volatile boolean clientActive = false;
-    private static volatile int clientCenterChunkX = 0;
-    private static volatile int clientCenterChunkZ = 0;
-    private static volatile int clientRadius = 1;
+    private static volatile Set<Long> clientSafeChunks = Set.of();
 
     public static boolean isAshlandsWorld(Level level) {
         if (level == null || level.dimension() != Level.OVERWORLD) {
@@ -27,18 +30,13 @@ public final class AshlandsWorld {
         return AshlandsConfig.SAFE_RADIUS_CHUNKS.get();
     }
 
-    public static int centerChunkX(ServerLevel level) {
-        return level.getSharedSpawnPos().getX() >> 4;
+    public static boolean isChunkSafe(ServerLevel level, int chunkX, int chunkZ) {
+        return isChunkInSafeZone(level.getSharedSpawnPos(), chunkX, chunkZ, safeRadiusChunks())
+                || PurifiedChunks.get(level).contains(chunkX, chunkZ);
     }
 
-    public static int centerChunkZ(ServerLevel level) {
-        return level.getSharedSpawnPos().getZ() >> 4;
-    }
-
-    public static boolean isInSafeZone(BlockPos pos, int centerChunkX, int centerChunkZ, int radius) {
-        int chunkX = pos.getX() >> 4;
-        int chunkZ = pos.getZ() >> 4;
-        return Math.abs(chunkX - centerChunkX) <= radius && Math.abs(chunkZ - centerChunkZ) <= radius;
+    public static boolean isInSafeZone(ServerLevel level, BlockPos pos) {
+        return isChunkSafe(level, pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     public static boolean isChunkInSafeZone(BlockPos spawnPos, int chunkX, int chunkZ, int radius) {
@@ -47,26 +45,19 @@ public final class AshlandsWorld {
         return Math.abs(chunkX - centerX) <= radius && Math.abs(chunkZ - centerZ) <= radius;
     }
 
-    public static void updateClientData(boolean active, int centerChunkX, int centerChunkZ, int radius) {
+    public static void updateClientData(boolean active, int centerChunkX, int centerChunkZ, int radius, List<Long> purified) {
         clientActive = active;
-        clientCenterChunkX = centerChunkX;
-        clientCenterChunkZ = centerChunkZ;
-        clientRadius = radius;
+
+        Set<Long> safe = new HashSet<>(purified);
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                safe.add(ChunkPos.asLong(centerChunkX + dx, centerChunkZ + dz));
+            }
+        }
+        clientSafeChunks = Set.copyOf(safe);
     }
 
-    public static boolean isClientActive() {
-        return clientActive;
-    }
-
-    public static int clientCenterChunkX() {
-        return clientCenterChunkX;
-    }
-
-    public static int clientCenterChunkZ() {
-        return clientCenterChunkZ;
-    }
-
-    public static int clientRadius() {
-        return clientRadius;
+    public static Set<Long> clientSafeChunks() {
+        return clientSafeChunks;
     }
 }

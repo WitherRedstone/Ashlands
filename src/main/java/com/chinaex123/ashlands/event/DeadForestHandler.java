@@ -10,6 +10,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CocoaBlock;
 import net.minecraft.world.level.block.HangingRootsBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
@@ -53,51 +54,79 @@ public final class DeadForestHandler {
         }
 
         ChunkPos pos = chunk.getPos();
-        if (AshlandsWorld.isChunkInSafeZone(level.getSharedSpawnPos(), pos.x, pos.z, AshlandsWorld.safeRadiusChunks())) {
+        if (AshlandsWorld.isChunkSafe(level, pos.x, pos.z)) {
             return;
         }
 
-        stripLeaves(chunk);
+        stripTrees(chunk);
     }
 
-    private static void stripLeaves(LevelChunk chunk) {
+    private static void stripTrees(LevelChunk chunk) {
+        Set<BlockPos> decorations = new HashSet<>();
+        chunk.findBlocks(state -> state.getBlock() instanceof VineBlock || state.getBlock() instanceof CocoaBlock,
+                (blockPos, state) -> decorations.add(blockPos.immutable()));
+
         List<BlockPos> leaves = new ArrayList<>();
         chunk.findBlocks(state -> state.is(BlockTags.LEAVES),
                 (blockPos, state) -> leaves.add(blockPos.immutable()));
-        if (leaves.isEmpty()) {
+        if (leaves.isEmpty() && decorations.isEmpty()) {
             return;
         }
 
         ChunkPos chunkPos = chunk.getPos();
-        BlockState air = Blocks.AIR.defaultBlockState();
-        Set<BlockPos> hanging = new HashSet<>();
+        Set<BlockPos> logs = new HashSet<>();
 
         for (BlockPos leaf : leaves) {
             for (Direction direction : Direction.values()) {
                 BlockPos neighbour = leaf.relative(direction);
-                if ((neighbour.getX() >> 4) != chunkPos.x || (neighbour.getZ() >> 4) != chunkPos.z) {
+                if (!inChunk(chunkPos, neighbour)) {
                     continue;
                 }
-                if (hangsOnLeaves(chunk.getBlockState(neighbour))) {
-                    hanging.add(neighbour);
+                BlockState state = chunk.getBlockState(neighbour);
+                if (isLeafDecoration(state)) {
+                    decorations.add(neighbour);
+                } else if (state.is(BlockTags.LOGS)) {
+                    logs.add(neighbour);
                 }
             }
-            chunk.setBlockState(leaf, air, false);
         }
 
-        for (BlockPos pos : hanging) {
+        for (BlockPos log : logs) {
+            for (Direction direction : Direction.values()) {
+                BlockPos neighbour = log.relative(direction);
+                if (!inChunk(chunkPos, neighbour) || !isTrunkDecoration(chunk.getBlockState(neighbour))) {
+                    continue;
+                }
+                decorations.add(neighbour);
+            }
+        }
+
+        BlockState air = Blocks.AIR.defaultBlockState();
+        for (BlockPos leaf : leaves) {
+            chunk.setBlockState(leaf, air, false);
+        }
+        for (BlockPos pos : decorations) {
             chunk.setBlockState(pos, air, false);
         }
 
-        Ashlands.LOGGER.trace("Ashlands dead forest: stripped {} leaves in chunk ({}, {})",
-                leaves.size(), chunkPos.x, chunkPos.z);
+        Ashlands.LOGGER.trace("Ashlands dead forest: stripped {} leaves and {} decorations in chunk ({}, {})",
+                leaves.size(), decorations.size(), chunkPos.x, chunkPos.z);
     }
 
-    private static boolean hangsOnLeaves(BlockState state) {
+    private static boolean inChunk(ChunkPos chunkPos, BlockPos pos) {
+        return (pos.getX() >> 4) == chunkPos.x && (pos.getZ() >> 4) == chunkPos.z;
+    }
+
+    private static boolean isLeafDecoration(BlockState state) {
         Block block = state.getBlock();
         return block instanceof SnowLayerBlock
-                || block instanceof VineBlock
                 || block instanceof MultifaceBlock
+                || block instanceof HangingRootsBlock;
+    }
+
+    private static boolean isTrunkDecoration(BlockState state) {
+        Block block = state.getBlock();
+        return block instanceof MultifaceBlock
                 || block instanceof HangingRootsBlock;
     }
 }

@@ -1,6 +1,12 @@
 {
-  "generator.ashlands.ashlands": "Ashlands",
+  "itemGroup.ashlands": "Ashlands",
+
+  "block.ashlands.purifier": "Purifier",
+  "block.ashlands.purifier.purified": "Chunk (%1$s, %2$s) purified",
+  "block.ashlands.purifier.already_safe": "This chunk is already safe",
   "effect.ashlands.radiation": "Radiation",
+  "generator.ashlands.ashlands": "Ashlands",
+
   "death.attack.ashlands.radiation": "%1$s was consumed by radiation",
   "death.attack.ashlands.radiation.player": "%1$s was consumed by radiation while fighting %2$s"
 }

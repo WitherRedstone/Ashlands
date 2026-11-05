@@ -6,7 +6,6 @@ import com.chinaex123.ashlands.init.ModAttachments;
 import com.chinaex123.ashlands.init.ModMobEffects;
 import com.chinaex123.ashlands.util.AshlandsWorld;
 import com.chinaex123.ashlands.init.RadiationDamage;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -42,13 +41,8 @@ public final class RadiationHandler {
         }
 
         long now = level.getGameTime();
-        int radius = AshlandsWorld.safeRadiusChunks();
-        BlockPos spawn = level.getSharedSpawnPos();
-        int centerX = spawn.getX() >> 4;
-        int centerZ = spawn.getZ() >> 4;
 
-        boolean inSafeZone = AshlandsWorld.isInSafeZone(player.blockPosition(), centerX, centerZ, radius);
-        if (inSafeZone && !isInfected(player)) {
+        if (AshlandsWorld.isInSafeZone(level, player.blockPosition()) && !isInfected(player)) {
             return;
         }
 
@@ -90,26 +84,20 @@ public final class RadiationHandler {
             return;
         }
 
-        long now = level.getGameTime();
-        if (now % MOB_SCAN_INTERVAL != 0) {
+        if (level.getGameTime() % MOB_SCAN_INTERVAL != 0) {
             return;
         }
 
-        int radius = AshlandsWorld.safeRadiusChunks();
-        BlockPos spawn = level.getSharedSpawnPos();
-        int centerX = spawn.getX() >> 4;
-        int centerZ = spawn.getZ() >> 4;
-
         for (Entity entity : level.getAllEntities()) {
-            if (!(entity instanceof LivingEntity living) || living instanceof Player || !living.isAlive()) {
+            if (!(entity instanceof LivingEntity living) || living instanceof Player) {
                 continue;
             }
-            boolean inSafeZone = AshlandsWorld.isInSafeZone(living.blockPosition(), centerX, centerZ, radius);
-            if (inSafeZone && !isInfected(living)) {
-                continue;
+            if (living.hasEffect(ModMobEffects.RADIATION)) {
+                living.removeEffect(ModMobEffects.RADIATION);
             }
-            long infectedAt = infect(living, now);
-            applyRadiation(living, radiationAmplifier(infectedAt, now));
+            if (isInfected(living)) {
+                living.setData(ModAttachments.RADIATION_START, -1L);
+            }
         }
     }
 

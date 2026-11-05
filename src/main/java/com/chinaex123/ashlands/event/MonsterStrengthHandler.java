@@ -33,7 +33,8 @@ public final class MonsterStrengthHandler {
         if (!AshlandsConfig.STRENGTHEN_MONSTERS.get()) {
             return;
         }
-        if (!(event.getLevel() instanceof ServerLevel level) || !AshlandsWorld.isAshlandsWorld(level)) {
+        ServerLevel level = event.getLevel().getLevel();
+        if (!AshlandsWorld.isAshlandsWorld(level)) {
             return;
         }
         if (!(event.getEntity() instanceof Monster monster)) {
