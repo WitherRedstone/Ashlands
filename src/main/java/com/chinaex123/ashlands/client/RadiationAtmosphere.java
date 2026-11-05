@@ -22,16 +22,18 @@ import org.joml.Matrix4fStack;
 public final class RadiationAtmosphere {
 
     /** 雾色向浓绿化靠拢的比例：灰域中浓，安全区内只轻微带一点，免得地平线发蓝。 */
-    private static final float FOG_COLOR_BLEND_WASTELAND = 0.85F;
-    private static final float FOG_COLOR_BLEND_SAFE = 0.45F;
+    private static final float FOG_COLOR_BLEND = 0.85F;
 
     /** 灰域中：视野立刻被压到几十格以内。 */
     private static final float WASTELAND_FOG_NEAR = 6.0F;
     private static final float WASTELAND_FOG_FAR = 56.0F;
 
-    /** 刚跨出光幕时雾还比较远，随着淡入再压到眼前。 */
-    private static final float ENTER_FOG_NEAR = 40.0F;
-    private static final float ENTER_FOG_FAR = 96.0F;
+    /** 安全区内：雾从光幕再往外一点开始，身边的东西不糊，光幕外的荒野照样雾蒙蒙。 */
+    private static final float SAFE_FOG_MARGIN = 6.0F;
+    private static final float SAFE_FOG_BAND = 48.0F;
+
+    /** 找不到非安全区块（安全区极大）时的兜底起点。 */
+    private static final float SAFE_ZONE_FOG_FALLBACK = 96.0F;
 
     /** 跨出光幕多少格之后开始淡入效果。 */
     private static final double RAMP_OFFSET = 0.5D;
@@ -63,11 +65,13 @@ public final class RadiationAtmosphere {
             return;
         }
 
-        // 安全区内完全不接管雾的浓淡，只是把地平线那圈雾色稍微调绿一点，和绿色天空接得上。
-        float blend = intensity() > 0.0F ? FOG_COLOR_BLEND_WASTELAND : FOG_COLOR_BLEND_SAFE;
-        event.setRed(Mth.lerp(blend, event.getRed(), FOG_RED));
-        event.setGreen(Mth.lerp(blend, event.getGreen(), FOG_GREEN));
-        event.setBlue(Mth.lerp(blend, event.getBlue(), FOG_BLUE));
+        if (event.getCamera().getFluidInCamera() != FogType.NONE) {
+            return;
+        }
+
+        event.setRed(Mth.lerp(FOG_COLOR_BLEND, event.getRed(), FOG_RED));
+        event.setGreen(Mth.lerp(FOG_COLOR_BLEND, event.getGreen(), FOG_GREEN));
+        event.setBlue(Mth.lerp(FOG_COLOR_BLEND, event.getBlue(), FOG_BLUE));
     }
 
     public static void onRenderFog(ViewportEvent.RenderFog event) {
@@ -84,14 +88,28 @@ public final class RadiationAtmosphere {
             return;
         }
 
-        // 只有跨出光幕之后才接管雾。
-        float t = intensity();
-        if (t <= 0.0F) {
+        // 沿视线方向量到光幕的距离：回头看安全区时它很远，
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) {
             return;
         }
 
-        float far = Math.min(event.getFarPlaneDistance(), Mth.lerp(t, ENTER_FOG_FAR, WASTELAND_FOG_FAR));
-        float near = Mth.lerp(t, ENTER_FOG_NEAR, WASTELAND_FOG_NEAR);
+        org.joml.Vector3f look = camera.getLookVector();
+        double toCurtain = AshlandsWorld.clientDistanceToUnsafeChunk(
+                camera.getPosition().x,
+                camera.getPosition().z,
+                look.x,
+                look.z);
+        float curtain = Double.isFinite(toCurtain) && toCurtain < 1.0E7D
+                ? (float) toCurtain
+                : SAFE_ZONE_FOG_FALLBACK;
+
+        float t = intensity();
+        float safeNear = curtain + SAFE_FOG_MARGIN;
+        float safeFar = safeNear + SAFE_FOG_BAND;
+
+        float far = Math.min(event.getFarPlaneDistance(), Mth.lerp(t, safeFar, WASTELAND_FOG_FAR));
+        float near = Mth.lerp(t, safeNear, WASTELAND_FOG_NEAR);
 
         event.setFarPlaneDistance(far);
         event.setNearPlaneDistance(Math.clamp(near, 0.5F, far * 0.9F));
