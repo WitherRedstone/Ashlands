@@ -33,7 +33,7 @@ public final class RadiationCurtainRenderer {
     private static final float COLOR_GREEN = 0.98F;
     private static final float COLOR_BLUE = 0.32F;
 
-    /** 贴图横向每 2 格重复一次，纵向每 1 格重复一次，与边境一致。 */
+    /** 贴图横向每 2 格重复一次，纵向每 1 格重复一次。 */
     private static final double TEXTURE_SCALE_H = 2.0D;
 
     public static void onRenderLevelStage(RenderLevelStageEvent event) {
@@ -114,10 +114,6 @@ public final class RadiationCurtainRenderer {
         RenderSystem.depthMask(true);
     }
 
-    /**
-     * 只在「该区块安全、相邻区块不安全」的那一侧生成光幕，所以安全区可以是不规则的形状。
-     * 每个元素是 {x0, z0, x1, z1, 到相机的最短距离}。
-     */
     private static List<double[]> collectWalls(Set<Long> safeChunks, Vec3 cameraPos, double fadeDistance) {
         List<double[]> walls = new ArrayList<>();
 
