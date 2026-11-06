@@ -46,6 +46,13 @@ public final class AshlandsWorld {
         return isChunkSafe(level, pos.getX() >> 4, pos.getZ() >> 4);
     }
 
+    public static boolean isChunkAdjacentToSafeZone(ServerLevel level, int chunkX, int chunkZ) {
+        return isChunkSafe(level, chunkX + 1, chunkZ)
+                || isChunkSafe(level, chunkX - 1, chunkZ)
+                || isChunkSafe(level, chunkX, chunkZ + 1)
+                || isChunkSafe(level, chunkX, chunkZ - 1);
+    }
+
     public static boolean isChunkInSafeZone(BlockPos spawnPos, int chunkX, int chunkZ, int radius) {
         int centerX = spawnPos.getX() >> 4;
         int centerZ = spawnPos.getZ() >> 4;

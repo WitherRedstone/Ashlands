@@ -4,6 +4,7 @@
   "block.ashlands.purifier": "净化器",
   "block.ashlands.purifier.purified": "区块 (%1$s, %2$s) 已被净化",
   "block.ashlands.purifier.already_safe": "这个区块已经是安全区了",
+  "block.ashlands.purifier.not_border": "只能紧贴安全区外沿使用",
   "effect.ashlands.radiation": "辐射",
   "generator.ashlands.ashlands": "灰域",
 

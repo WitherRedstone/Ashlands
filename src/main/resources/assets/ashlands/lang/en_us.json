@@ -4,6 +4,7 @@
   "block.ashlands.purifier": "Purifier",
   "block.ashlands.purifier.purified": "Chunk (%1$s, %2$s) purified",
   "block.ashlands.purifier.already_safe": "This chunk is already safe",
+  "block.ashlands.purifier.not_border": "Can only be used right outside the safe zone",
   "effect.ashlands.radiation": "Radiation",
   "generator.ashlands.ashlands": "Ashlands",
 

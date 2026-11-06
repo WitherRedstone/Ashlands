@@ -46,6 +46,12 @@ public class PurifierBlock extends Block {
             return InteractionResult.SUCCESS;
         }
 
+        if (!AshlandsWorld.isChunkAdjacentToSafeZone(serverLevel, chunk.x, chunk.z)) {
+            player.displayClientMessage(
+                    Component.translatable("block.ashlands.purifier.not_border").withStyle(ChatFormatting.RED), true);
+            return InteractionResult.SUCCESS;
+        }
+
         if (!PurifiedChunks.get(serverLevel).add(chunk.x, chunk.z)) {
             return InteractionResult.SUCCESS;
         }

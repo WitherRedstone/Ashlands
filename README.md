@@ -1,87 +1,126 @@
-# Ashlands 灰域
+**English** | [简体中文](README_ZH.md)
 
-选择「灰域（Ashlands）」世界类型创建世界后，整个世界都会充满辐射：出生点周围的 3×3 共 9 个区块是唯一的安全区，
-越过安全区边界就会受到无限时长的辐射影响，辐射无法被任何手段消除。
+# Ashlands
 
-## 核心机制
+Once you create a world with the **Ashlands** world type, the whole world becomes irradiated: the 3×3 chunks
+around the spawn point (9 chunks in total) form the only safe zone. Crossing the safe zone boundary inflicts
+an infinite-duration radiation effect, and radiation cannot be removed by any means.
 
-### 世界类型
-- 新建世界时在「世界类型」中选择 **灰域 / Ashlands**。
-- 只有在灰域世界中这些机制才会生效；普通世界里模组完全不干预。
+## Core Mechanics
 
-### 安全区与光幕
-- 安全区为出生点所在区块及其周围一圈，共 3×3 = 9 个区块，半径可在配置里改（`safeRadiusChunks`）。
-- 安全区与外界之间有一道贯穿整个世界高度（从世界最低点到世界最高点）的光幕。
+### World Type
+- When creating a new world, choose **Ashlands** in the world type list.
+- These mechanics only work in an Ashlands world; in a normal world the mod does not interfere at all.
 
-### 净化器
-- 手持净化器右键，会把**方块所在的这一个区块**变成安全区：该区块内的辐射消失、光幕自动沿着这个区块重画。
-- 净化器是**一次性**的：净化成功后这个方块会直接消失，不会掉落物品。
-- 已净化的区块保存在存档数据里（`data/ashlands_purified_chunks.dat`），重进世界或重启服务器后依然有效。
+### Safe Zone and Light Curtain
+- The safe zone is the chunk the spawn point is in plus one ring around it — 3×3 = 9 chunks. The radius is
+  configurable (`safeRadiusChunks`).
+- A light curtain spanning the entire world height (from the world's minimum build height to its maximum)
+  separates the safe zone from the outside.
 
-### 辐射
-越过光幕后立刻获得 **辐射** 效果，时长无限，效果随感染时间每 10 分钟提升一级（最高 3 级）：
+### Purifier
+- Right-click a purifier to turn **the single chunk the block is in** into a safe zone: radiation inside that
+  chunk disappears and the light curtain redraws itself around it.
+- It can only be used right against the outer edge of the safe zone: the chunk must share an edge
+  (north, south, east or west) with an existing safe chunk. Otherwise right-clicking only shows
+  "Can only be used right outside the safe zone". This lets the safe zone grow ring by ring instead of
+  opening a safe chunk somewhere else in the world out of thin air.
+- The purifier is **single-use**: after a successful purification the block disappears and drops nothing.
+- The recipe is expensive: a Nether Star + 4 Netherite Ingots + 4 Echo Shards (`NEN / ESE / NEN`, where `S`
+  is the Nether Star).
+- Purified chunks are stored in the save data (`data/ashlands_purified_chunks.dat`) and remain valid after
+  re-entering the world or restarting the server.
 
-- **1 级**：持续消耗饥饿值与饱和度，每 60 秒扣除半颗心。
-- **2 级**：每 30 秒扣除 1 颗心，并大量消耗饥饿值与饱和度。
-- **3 级**：立刻清空饥饿值与饱和度，之后食物也无法恢复；每 10 秒扣除 2 颗心。
+### Radiation
+Crossing the curtain immediately grants the **Radiation** effect with an infinite duration. The effect gains
+one level every 10 minutes of infection, up to level 3:
 
-以上数值都可以在配置文件的 `[radiationLevel1]` / `[radiationLevel2]` / `[radiationLevel3]` 分节里逐项调整。
+- **Level 1**: constantly drains hunger and saturation, and deals half a heart of damage every 60 seconds.
+- **Level 2**: deals 1 heart of damage every 30 seconds and drains a large amount of hunger and saturation.
+- **Level 3**: instantly empties hunger and saturation, after which food can no longer restore them; deals
+  2 hearts of damage every 10 seconds.
 
-### 辐射大气
-在灰域世界里，天空始终是同一片被辐射染色的天空，安全区内也不例外：
+All of these values can be tuned per level in the `[radiationLevel1]` / `[radiationLevel2]` / `[radiationLevel3]`
+sections of the config file.
 
-- **天空**：整体是一层从地平线到天顶的暗绿渐变，原版的太阳、月亮、星空和云全部不绘制，区内区外一致。
-- **辐射雾气**：雾线按「视线方向上多久能离开安全区」来摆。朝光幕外看，雾正好从光幕那里开始，
-  界外那片荒野是灰绿色的；回头朝安全区里看，雾线被推到视野之外，界内一点雾都不沾。
-  跨出光幕之后雾线进一步压到眼前，能见度只剩几十格。
-- 雾线在跨出光幕 0.5 格之后开始淡入，约 2.5 格后完全生效，所以边界上不会突然糊成一片。
-- 安全区大小跟着配置与净化器变化：净化器扩出来的区块同样算安全区，雾也就跟着让开。
-- **雨雪**：下雨、下雪时雨丝和雪花都会染成辐射的黄绿色，安全区内和光幕之外都一样。雨走的是一套自己的着色器——原版那张雨纹理本身是深蓝的，靠颜色相乘只会越乘越暗，所以这里直接把颜色赋值、只借用原版雨纹理的轮廓；画完雨会立刻把着色器交还给原版，不影响其他模组。
-- **辐射雨**：站在雨或雪里会持续挂上 1 级中毒，每次判定还有 5% 的概率直接染上 1 级辐射（安全区内也会）。
-- **界外的水**：光幕之外泡在水里同样会持续中毒。
+### Radiation Atmosphere
+In an Ashlands world the sky is always tinted by radiation — inside the safe zone as well:
 
-补充说明：
+- **Sky**: a dark-green gradient from the horizon to the zenith. The vanilla sun, moon, stars and clouds are
+  not rendered at all, so the sky looks the same inside and outside the safe zone.
+- **Radiation fog**: the fog line follows "how far you can look along your view direction before leaving the
+  safe zone". Looking out through the curtain, the fog starts right at the curtain and the wasteland beyond it
+  is grey-green; looking back into the safe zone, the fog line is pushed out of your view and nothing inside
+  is fogged. Once you step outside the curtain the fog line closes in further, leaving only a few dozen blocks
+  of visibility.
+- Fog starts fading in 0.5 blocks past the curtain and is fully active after about 2.5 blocks, so the boundary
+  never turns into a sudden wall of fog.
+- The safe zone size follows both the config and the purifier: chunks added by purifiers count as safe zone too,
+  and the fog moves out of the way accordingly.
+- **Rain and snow**: while raining or snowing, both the rain streaks and the snowflakes are tinted the
+  radiation yellow-green, inside the safe zone and outside the curtain alike. Rain uses its own shader — the
+  vanilla rain texture is dark blue, so multiplying it by a colour only ever makes it darker. Instead the
+  colour is assigned directly and only the silhouette of the vanilla rain texture is reused. The vanilla
+  particle shader is handed back as soon as the rain has been drawn, so other mods are unaffected.
+- **Radiation rain**: standing in rain or snow continuously applies level 1 Poison, and each check also has a
+  5% chance to inflict level 1 Radiation directly (inside the safe zone too).
+- **Water outside the safe zone**: soaking in water outside the curtain also applies continuous Poison.
 
-- 辐射不可通过牛奶、蜂蜜、图腾或任何其他方式消除。
-- 若效果被强制清除，模组会在下一次检测时自动重新施加。
-- 辐射只作用于玩家：除玩家以外的生物不会获得辐射效果，一旦带上（例如被指令或其他模组施加）会被立刻清除。
+Notes:
 
-### 枯死的森林
-- 安全区之外**所有区块**中的树叶（`#minecraft:leaves`）都会被移除，只留下没有树叶的树干，
-  整个世界只剩出生点周围的 9 个区块（以及被净化器点亮的区块）还有生机。
+- Radiation cannot be removed with milk, honey, a totem or any other method.
+- If the effect is forcibly cleared, the mod re-applies it at the next check.
+- Radiation only affects players: non-player entities never receive it, and if one somehow does (for example
+  via a command or another mod) it is removed immediately.
 
-### 强化怪物
-- 灰域世界中生成的敌对生物会被强化：生命值 +100%、攻击力 +50%、移动速度 +15%、护甲 +4。
-- 安全区内部不会刷敌对生物：自然刷怪、刷怪笼、结构刷怪、巡逻队都会被挡下。
+### Dead Forests
+- Leaves (`#minecraft:leaves`) in **every chunk** outside the safe zone are removed, leaving only bare trunks.
+  The only living parts of the world are the 9 chunks around the spawn point (plus any chunks lit up by
+  purifiers).
 
-### 伤害类型
-- 辐射伤害使用独立伤害类型 `ashlands:radiation`，无视护甲与附魔。
+### Strengthened Monsters
+- Hostile mobs spawned in an Ashlands world are strengthened: +100% health, +50% attack damage, +15% movement
+  speed and +4 armor.
+- Hostile mobs do not spawn inside the safe zone: natural spawns, spawners, structure spawns and patrols are
+  all blocked.
 
-## 配置
+### Damage Type
+- Radiation damage uses its own damage type `ashlands:radiation`, which ignores armor and enchantments.
 
-配置文件：`config/ashlands-common.toml`
+## Configuration
 
-- `safeRadiusChunks`：安全区半径（单位：区块），默认 `1`。`0` = 只有出生点区块，`1` = 3×3 共 9 个区块，
-  `2` = 5×5……最大 `16`（33×33）。光幕位置、辐射判定边界、树叶保留范围都以此为准。
-- `ticksPerRadiationLevel`：辐射每提升一级所需的游戏刻，默认 `12000`（20 刻 = 1 秒，12000 刻 = 10 分钟），最高 3 级。
-- `strengthenMonsters`：是否强化灰域世界中的怪物，默认 `true`。
-- `stripTreesOutsideSafeZone`：是否移除安全区之外所有区块的树叶和树的装饰，默认 `true`。
-- `radiationDamage`：总开关，辐射是否造成伤害，默认 `true`（关闭后只影响饥饿值与饱和度）。
-- `noHostileSpawnsInSafeZone`：是否禁止敌对生物在安全区内生成，默认 `true`。
+Config file: `config/ashlands-common.toml`
 
-每级辐射的具体数值在下面的三个分节里：[radiationLevel1] / [radiationLevel2] / [radiationLevel3]
+- `safeRadiusChunks`: safe zone radius in chunks, default `1`. `0` = only the spawn chunk, `1` = 3×3 = 9 chunks,
+  `2` = 5×5 … up to `16` (33×33). The light curtain position, the radiation boundary and the leaf-preserved area
+  all follow this value.
+- `ticksPerRadiationLevel`: game ticks required for radiation to gain one level, default `12000`
+  (20 ticks = 1 second, 12000 ticks = 10 minutes). Maximum level is 3.
+- `strengthenMonsters`: whether to strengthen monsters in Ashlands worlds, default `true`.
+- `stripTreesOutsideSafeZone`: whether to remove leaves and tree decorations in every chunk outside the safe
+  zone, default `true`.
+- `radiationDamage`: master switch for radiation damage, default `true` (when disabled, radiation only drains
+  hunger and saturation).
+- `noHostileSpawnsInSafeZone`: whether to prevent hostile mobs from spawning inside the safe zone, default `true`.
 
-- `damage`：每次扣血量，`2` 点 = 1 颗心。默认 1 级 `1.0`（半颗心）、2 级 `2.0`（1 颗心）、3 级 `4.0`（2 颗心）。
-- `damageIntervalTicks`：两次扣血之间隔多少刻。默认 1 级 `1200`（60 秒）、2 级 `600`（30 秒）、3 级 `200`（10 秒）。
-- `foodDrain`：每次扣多少点饥饿值。默认 1 级 `1`、2 级 `3`。
-- `saturationDrain`：每次扣多少饱和度。默认 1 级 `1.0`、2 级 `6.0`。
-- `foodIntervalTicks`：两次扣饥饿值/饱和度之间隔多少刻，默认两级都是 `200`（10 秒）。
-- `locksFood`（仅 3 级）：是否每刻强制清空饥饿值与饱和度，默认 `true`。
+The per-level values live in the three sections below: `[radiationLevel1]` / `[radiationLevel2]` / `[radiationLevel3]`
 
-这里的间隔统一用游戏刻（20 刻 = 1 秒），这样和游戏内的时长完全对得上，也不会出现除不尽的小数。
+- `damage`: damage per hit, where `2` points = 1 heart. Defaults: level 1 `1.0` (half a heart), level 2 `2.0`
+  (1 heart), level 3 `4.0` (2 hearts).
+- `damageIntervalTicks`: ticks between two damage hits. Defaults: level 1 `1200` (60 s), level 2 `600` (30 s),
+  level 3 `200` (10 s).
+- `foodDrain`: hunger points drained per hit. Defaults: level 1 `1`, level 2 `3`.
+- `saturationDrain`: saturation drained per hit. Defaults: level 1 `1.0`, level 2 `6.0`.
+- `foodIntervalTicks`: ticks between two hunger/saturation drains. Default `200` (10 s) for both levels.
+- `locksFood` (level 3 only): whether hunger and saturation are forced to zero every tick, default `true`.
 
-把某项的数值改成 `0` 就等于关掉那一条（例如 `damage = 0.0` 表示该级不扣血，`foodDrain = 0` 表示不扣饥饿值）。
+All intervals are expressed in game ticks (20 ticks = 1 second), so they match in-game durations exactly and
+never produce repeating decimals.
 
-修改后需要重进世界（或重启服务器）才会生效；启动时日志会打印一行
-`Ashlands safe zone: radius N chunk(s) = (2N+1)x(2N+1) chunks, centered on chunk (x, z)`，
-可以据此确认配置是否已生效。已经生成过的区块里被移除的树叶不会因为调大安全区而恢复。
+Setting a value to `0` effectively disables that entry (for example `damage = 0.0` means that level deals no
+damage, and `foodDrain = 0` means no hunger drain).
+
+Changes take effect after re-entering the world (or restarting the server). At startup the log prints a line like
+`Ashlands safe zone: radius N chunk(s) = (2N+1)x(2N+1) chunks, centered on chunk (x, z)`, which you can use to
+confirm the config took effect. Leaves already removed in generated chunks do not come back when the safe zone
+is enlarged.
