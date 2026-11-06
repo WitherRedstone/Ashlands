@@ -3,9 +3,9 @@ package com.chinaex123.ashlands.event;
 import com.chinaex123.ashlands.Ashlands;
 import com.chinaex123.ashlands.config.AshlandsConfig;
 import com.chinaex123.ashlands.util.AshlandsWorld;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -14,7 +14,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Monster;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 @EventBusSubscriber(modid = Ashlands.MODID)
 public final class MonsterStrengthHandler {
@@ -29,15 +29,32 @@ public final class MonsterStrengthHandler {
             ResourceLocation.fromNamespaceAndPath(Ashlands.MODID, "monster_armor");
 
     @SubscribeEvent
-    public static void onFinalizeSpawn(FinalizeSpawnEvent event) {
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
+        if (!(event.getEntity() instanceof Monster monster)) {
+            return;
+        }
+        if (!(event.getLevel() instanceof ServerLevel level)) {
+            return;
+        }
+        if (event.loadedFromDisk()) {
+            return;
+        }
         if (!AshlandsConfig.STRENGTHEN_MONSTERS.get()) {
             return;
         }
-        ServerLevel level = event.getLevel().getLevel();
         if (!AshlandsWorld.isAshlandsWorld(level)) {
             return;
         }
-        if (!(event.getEntity() instanceof Monster monster)) {
+        if (AshlandsWorld.isInSafeZone(level, monster.blockPosition())) {
+            return;
+        }
+
+        applyModifiers(monster);
+    }
+
+    private static void applyModifiers(Monster monster) {
+        AttributeInstance healthInstance = monster.getAttribute(Attributes.MAX_HEALTH);
+        if (healthInstance != null && healthInstance.getModifier(HEALTH_ID) != null) {
             return;
         }
 
@@ -46,11 +63,10 @@ public final class MonsterStrengthHandler {
         addModifier(monster, Attributes.MOVEMENT_SPEED, SPEED_ID, 0.15D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         addModifier(monster, Attributes.ARMOR, ARMOR_ID, 4.0D, AttributeModifier.Operation.ADD_VALUE);
 
-        // 生命上限提高后补满血量，避免生成时只有一半血。
         monster.setHealth(monster.getMaxHealth());
     }
 
-    private static void addModifier(Mob mob, net.minecraft.core.Holder<Attribute> attribute,
+    private static void addModifier(Mob mob, Holder<Attribute> attribute,
                                     ResourceLocation id, double amount, AttributeModifier.Operation operation) {
         AttributeInstance instance = mob.getAttribute(attribute);
         if (instance == null || instance.getModifier(id) != null) {

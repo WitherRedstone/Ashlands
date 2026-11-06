@@ -28,12 +28,10 @@ public final class RadiationCurtainRenderer {
 
     private static final ResourceLocation FORCEFIELD_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
 
-    /** 光幕颜色：辐射绿。 */
-    private static final float COLOR_RED = 0.42F;
-    private static final float COLOR_GREEN = 0.98F;
-    private static final float COLOR_BLUE = 0.32F;
+    private static final float COLOR_RED = 32.0F / 255.0F;
+    private static final float COLOR_GREEN = 160.0F / 255.0F;
+    private static final float COLOR_BLUE = 1.0F;
 
-    /** 贴图横向每 2 格重复一次，纵向每 1 格重复一次。 */
     private static final double TEXTURE_SCALE_H = 2.0D;
 
     public static void onRenderLevelStage(RenderLevelStageEvent event) {

@@ -12,6 +12,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.FogType;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
@@ -46,6 +47,14 @@ public final class RadiationAtmosphere {
     private static final float FOG_GREEN = 0.60F;
     private static final float FOG_BLUE = 0.33F;
 
+    private static final float SNOW_RED = 0.58F;
+    private static final float SNOW_GREEN = 1.0F;
+    private static final float SNOW_BLUE = 0.42F;
+
+    private static long cachedTick = Long.MIN_VALUE;
+    private static float cachedIntensity;
+    private static boolean weatherTinted;
+
     /** 天空颜色，上方更暗更冷，靠近地平线更亮。 */
     private static final float SKY_TOP_RED = 0.06F;
     private static final float SKY_TOP_GREEN = 0.11F;
@@ -53,12 +62,6 @@ public final class RadiationAtmosphere {
     private static final float SKY_BOTTOM_RED = 0.31F;
     private static final float SKY_BOTTOM_GREEN = 0.43F;
     private static final float SKY_BOTTOM_BLUE = 0.20F;
-
-    private static long cachedTick = Long.MIN_VALUE;
-    private static float cachedIntensity;
-
-    private RadiationAtmosphere() {
-    }
 
     public static void onComputeFogColor(ViewportEvent.ComputeFogColor event) {
         if (!hasAtmosphere()) {
@@ -178,7 +181,6 @@ public final class RadiationAtmosphere {
         double distance = AshlandsWorld.clientDistanceToSafeZone(
                 minecraft.player.getX(),
                 minecraft.player.getZ());
-        // 客户端还没收到安全区数据时，距离是 Integer.MAX_VALUE，这时按「在安全区里」处理。
         if (distance >= Integer.MAX_VALUE - 1) {
             cachedIntensity = 0.0F;
             return cachedIntensity;
@@ -192,5 +194,45 @@ public final class RadiationAtmosphere {
     public static boolean hasAtmosphere() {
         Minecraft minecraft = Minecraft.getInstance();
         return AshlandsWorld.isAshlandsWorld(minecraft.level);
+    }
+
+    public static void applyRainShader() {
+        if (!hasAtmosphere()) {
+            return;
+        }
+
+        ShaderInstance shader = AshlandsShaders.radiationRain();
+        if (shader == null) {
+            return;
+        }
+
+        RenderSystem.setShader(() -> shader);
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    public static void restoreParticleShader() {
+        RenderSystem.setShader(GameRenderer::getParticleShader);
+    }
+
+    public static void applySnowTint() {
+        applyWeatherTint(SNOW_RED, SNOW_GREEN, SNOW_BLUE);
+    }
+
+    private static void applyWeatherTint(float red, float green, float blue) {
+        if (!hasAtmosphere()) {
+            return;
+        }
+
+        RenderSystem.setShaderColor(red, green, blue, 1.0F);
+        weatherTinted = true;
+    }
+
+    public static void clearWeatherTint() {
+        if (!weatherTinted) {
+            return;
+        }
+
+        weatherTinted = false;
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }
