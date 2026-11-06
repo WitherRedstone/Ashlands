@@ -11,6 +11,7 @@ public final class AshlandsConfig {
     public static final ModConfigSpec.BooleanValue STRIP_TREES_OUTSIDE_SAFE_ZONE;
     public static final ModConfigSpec.BooleanValue RADIATION_DAMAGE;
     public static final ModConfigSpec.BooleanValue NO_HOSTILE_SPAWNS_IN_SAFE_ZONE;
+    public static final ModConfigSpec.BooleanValue DEFAULT_WORLD_TYPE;
 
     public static final ModConfigSpec.DoubleValue LEVEL1_DAMAGE;
     public static final ModConfigSpec.IntValue LEVEL1_DAMAGE_INTERVAL;
@@ -48,6 +49,10 @@ public final class AshlandsConfig {
                 .comment("是否禁止敌对生物在安全区内自然生成。")
                 .comment("Whether hostile mobs are prevented from spawning inside the safe zone.")
                 .define("noHostileSpawnsInSafeZone", true);
+        DEFAULT_WORLD_TYPE = builder
+                .comment("是否将 Ashlands 设为默认世界类型")
+                .comment("Set Ashlands as the default world type")
+                .define("defaultWorldType", true);
         builder.pop();
 
 
@@ -121,7 +126,7 @@ public final class AshlandsConfig {
                 .comment("Whether hunger and saturation are forced to zero every tick, so food can no longer restore them.")
                 .define("locksFood", true);
         builder.pop();
-        
+
         builder.pop();
 
         SPEC = builder.build();

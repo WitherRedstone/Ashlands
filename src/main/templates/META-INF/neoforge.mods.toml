@@ -10,19 +10,12 @@ authors="ChinaEX123"
 logoFile="logo.png"
 description='''
 The whole world is full of radiation—how should you survive?
-<p>Create a world with the "Ashlands" world type to enable the mechanic: the world is irradiated,
-only the 3x3 chunks around spawn are safe, a visible curtain of light marks the border, boundary trees
-are reduced to leafless trunks and monsters are strengthened. Crossing the curtain grants an
-unlimited, uncurable radiation effect.</p>
-<p>选择「灰域」世界类型后启用本模组的全部机制：全世界充满辐射，仅出生点周围 3x3 区块安全，
-边界处有贯穿世界高度的光幕，边界树木只留树干，怪物被强化。跨过光幕会获得永久且无法清除的
-辐射效果。</p>
 '''
 
 [[mixins]]
 config="${mod_id}.mixins.json"
 
-[[dependencies.${mod_id}]] #optional
+[[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
     versionRange="[${neo_version},)"
